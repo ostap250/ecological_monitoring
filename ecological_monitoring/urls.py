@@ -13,22 +13,24 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.http import JsonResponse
 from django.contrib import admin
 from django.urls import path, include
+from rivers.views import FuzzyLogicView  # Імпорт вашого View для нечіткої логіки
 from rest_framework.routers import DefaultRouter
 from rivers.views import RiverViewSet, MonitoringStationViewSet, EcologicalIndicatorViewSet, MeasurementViewSet
-from django.http import JsonResponse  # Для простого відповіді на кореневий маршрут
 
-# Створення router для API
 router = DefaultRouter()
 router.register(r'rivers', RiverViewSet)
 router.register(r'stations', MonitoringStationViewSet)
 router.register(r'indicators', EcologicalIndicatorViewSet)
 router.register(r'measurements', MeasurementViewSet)
 
-# Основні URL-шляхи
 urlpatterns = [
-    path('', lambda request: JsonResponse({"message": "Welcome to Ecological Monitoring API"})),  # Кореневий маршрут
-    path('admin/', admin.site.urls),  # Для адміністративної панелі
-    path('api/', include(router.urls)),  # Підключення маршрутизатора
+    path('', lambda request: JsonResponse({"message": "Site is working for now"})),  # Кореневий маршрут
+    path('admin/', admin.site.urls),  # Адмін-панель
+    path('api/', include(router.urls)),  # REST-маршрути
+    path('api/fuzzy-logic/', FuzzyLogicView.as_view(), name='fuzzy_logic'),  # Нечітка логіка
 ]
+
+

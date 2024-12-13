@@ -61,13 +61,25 @@ rating_ctrl = ctrl.ControlSystem([
 rating_simulation = ctrl.ControlSystemSimulation(rating_ctrl)
 
 # Функція для отримання рекомендацій
-def calculate_rating_and_recommendation(rating):
+def calculate_rating_and_recommendation(oxygen, biological_index, pollutant_concentration):
+    # Передаємо значення до системи
+    rating_simulation.input['oxygen'] = oxygen
+    rating_simulation.input['biological_index'] = biological_index
+    rating_simulation.input['pollutant_concentration'] = pollutant_concentration
+
+    # Обчислюємо рейтинг
+    rating_simulation.compute()
+    rating = rating_simulation.output['environmental_rating']
+
+    # Генеруємо рекомендацію
     if rating < 30:
-        return "Необхідно терміново провести очищення водойми."
+        recommendation = "Необхідно терміново провести очищення водойми."
     elif 30 <= rating < 60:
-        return "Потрібно моніторити стан та поступово вживати заходів."
+        recommendation = "Потрібно моніторити стан та поступово вживати заходів."
     else:
-        return "Стан водойми задовільний. Рекомендується підтримувати контроль."
+        recommendation = "Стан водойми задовільний. Рекомендується підтримувати контроль."
+        return rating, recommendation
+
 
 # Тестування
 rating_simulation.input['oxygen'] = 5
@@ -76,5 +88,6 @@ rating_simulation.input['pollutant_concentration'] = 70
 
 rating_simulation.compute()
 rating = rating_simulation.output['environmental_rating']
-print(f"Екологічний рейтинг: {rating:.2f}")
-print(calculate_rating_and_recommendation(rating))
+# print(f"Екологічний рейтинг: {rating:.2f}")
+# print(calculate_rating_and_recommendation(rating))
+
