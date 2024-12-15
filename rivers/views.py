@@ -11,7 +11,8 @@ from django.views import View
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-
+from django.http import JsonResponse
+from .sensor_data_generator import generate_sensor_data, save_to_json_file
 # ViewSets
 class RiverViewSet(viewsets.ModelViewSet):
     queryset = River.objects.all()
@@ -70,7 +71,15 @@ class FuzzyLogicView(APIView):
         
         })
     
+def sensor_data_view(request):
+    """Імітація сенсора: генерація нових даних."""
+    data = generate_sensor_data()
+    save_to_json_file(data)  # Опціонально зберігаємо дані у файл
+    return JsonResponse(data)
 
+def process_river_data(request):
+    # Ваш код для обробки даних річки тут
+    return render(request, 'template_name.html', {})
 
 # Клас для обробки даних з файлу data.json
 @method_decorator(csrf_exempt, name='dispatch')

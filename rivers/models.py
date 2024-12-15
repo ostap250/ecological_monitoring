@@ -29,7 +29,6 @@ class SensorData(models.Model):
         return f"Sensor Data at {self.timestamp}"
 
 
-
 class EcologicalIndicator(models.Model):
     river = models.ForeignKey(River, on_delete=models.CASCADE, related_name='indicators')
     indicator_name = models.CharField(max_length=255)

@@ -114,7 +114,7 @@ def evaluate_river_safety(oxygen, bio_index, pollutants):
         return "Безпечна"
     elif oxygen >= 6 and bio_index >= 4 and pollutants <= 70:
         return "Умовно безпечна"
-    else:
+    else:   
         return "Небезпечна"
 
 
