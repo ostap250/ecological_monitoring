@@ -16,6 +16,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 STATIC_URL = '/static/'
 
+# STATICFILES_DIRS = [BASE_DIR + "/" + "static/react"]
+
 STATIC_ROOT = "staticfiles"
 
 STATICFILES_DIRS = [  

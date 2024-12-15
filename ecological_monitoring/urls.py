@@ -5,6 +5,8 @@ from rivers.views import FuzzyLogicView  # Імпорт FuzzyLogicView
 from rest_framework.routers import DefaultRouter
 from django.conf import settings
 from django.conf.urls.static import static 
+from django.views.generic import TemplateView
+
 from rivers.views import (
     RiverViewSet, 
     MonitoringStationViewSet, 
@@ -26,6 +28,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),  # Адмін-панель
     path('api/', include(router.urls)),  # REST-маршрути для ViewSets
     path('api/fuzzy-logic/', FuzzyLogicView.as_view(), name='fuzzy_logic'),  # Нечітка логіка 
+    path('', TemplateView.as_view(template_name="react/index.html")),
 ] + static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
 
 # if settings.DEBUG:
