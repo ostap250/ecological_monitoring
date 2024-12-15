@@ -6,6 +6,9 @@ from skfuzzy import control as ctrl
 oxygen = ctrl.Antecedent(np.arange(0, 15, 0.1), 'oxygen')
 biological_index = ctrl.Antecedent(np.arange(0, 10, 0.1), 'biological_index')
 pollutant_concentration = ctrl.Antecedent(np.arange(0, 100, 1), 'pollutant_concentration')
+temperature = ctrl.Antecedent(np.arange(0, 30, 0.1), 'temperature') 
+turbidity = ctrl.Antecedent(np.arange(0, 100, 0.1), 'turbidity')
+environmental_rating = ctrl.Consequent(np.arange(0, 101, 1), 'environmental_rating')
 
 # Визначення виходу (output variable)
 environmental_rating = ctrl.Consequent(np.arange(0, 101, 1), 'environmental_rating')
@@ -15,10 +18,22 @@ oxygen['low'] = fuzz.trapmf(oxygen.universe, [0, 0, 4, 6])
 oxygen['medium'] = fuzz.trimf(oxygen.universe, [4, 7, 10])
 oxygen['high'] = fuzz.trapmf(oxygen.universe, [8, 12, 15, 15])
 
+# Фаззифікація входів для temperature
+temperature['low'] = fuzz.trapmf(temperature.universe, [0, 0, 10, 15])
+temperature['average'] = fuzz.trimf(temperature.universe, [10, 15, 20])
+temperature['high'] = fuzz.trapmf(temperature.universe, [15, 20, 30, 30])
+
+# Фаззифікація для turbidity
+turbidity['low'] = fuzz.trapmf(turbidity.universe, [0, 0, 20, 40])
+turbidity['average'] = fuzz.trimf(turbidity.universe, [20, 50, 80])
+turbidity['high'] = fuzz.trapmf(turbidity.universe, [60, 80, 100, 100])
+
+# Фаззифікація для biological_index
 biological_index['poor'] = fuzz.trapmf(biological_index.universe, [0, 0, 3, 5])
 biological_index['average'] = fuzz.trimf(biological_index.universe, [3, 5, 7])
 biological_index['good'] = fuzz.trapmf(biological_index.universe, [6, 8, 10, 10])
 
+# Фаззифікація для pollutant_concentration
 pollutant_concentration['low'] = fuzz.trapmf(pollutant_concentration.universe, [0, 0, 20, 40])
 pollutant_concentration['medium'] = fuzz.trimf(pollutant_concentration.universe, [20, 50, 80])
 pollutant_concentration['high'] = fuzz.trapmf(pollutant_concentration.universe, [60, 80, 100, 100])
@@ -29,20 +44,21 @@ environmental_rating['average'] = fuzz.trimf(environmental_rating.universe, [30,
 environmental_rating['good'] = fuzz.trapmf(environmental_rating.universe, [60, 80, 100, 100])
 
 # Правила нечіткої логіки
-rule1 = ctrl.Rule(oxygen['low'] & biological_index['poor'] & pollutant_concentration['high'], environmental_rating['poor'])
-rule2 = ctrl.Rule(oxygen['low'] & biological_index['poor'] & pollutant_concentration['medium'], environmental_rating['poor'])
-rule3 = ctrl.Rule(oxygen['medium'] & biological_index['average'] & pollutant_concentration['medium'], environmental_rating['average'])
-rule4 = ctrl.Rule(oxygen['high'] & biological_index['good'] & pollutant_concentration['low'], environmental_rating['good'])
-rule5 = ctrl.Rule(oxygen['medium'] & biological_index['good'] & pollutant_concentration['low'], environmental_rating['good'])
-rule6 = ctrl.Rule(oxygen['low'] & biological_index['average'] & pollutant_concentration['high'], environmental_rating['poor'])
-rule7 = ctrl.Rule(oxygen['high'] & biological_index['poor'] & pollutant_concentration['medium'], environmental_rating['average'])
-rule8 = ctrl.Rule(oxygen['medium'] & biological_index['average'] & pollutant_concentration['low'], environmental_rating['good'])
-rule9 = ctrl.Rule(oxygen['low'] & biological_index['good'] & pollutant_concentration['medium'], environmental_rating['average'])
-rule10 = ctrl.Rule(oxygen['high'] & biological_index['good'] & pollutant_concentration['high'], environmental_rating['average'])
 
-# Додаткові правила
-rule11 = ctrl.Rule(oxygen['medium'] & biological_index['poor'] & pollutant_concentration['high'], environmental_rating['poor'])
-rule12 = ctrl.Rule(oxygen['medium'] & biological_index['good'] & pollutant_concentration['medium'], environmental_rating['good'])
+rule1 = ctrl.Rule(oxygen['low'] & biological_index['poor'] & pollutant_concentration['high'] & temperature['high'] & turbidity['high'], environmental_rating['poor'])
+rule2 = ctrl.Rule(oxygen['low'] & biological_index['poor'] & pollutant_concentration['medium'] & temperature['high'] & turbidity['high'], environmental_rating['poor'])
+rule3 = ctrl.Rule(oxygen['medium'] & biological_index['average'] & pollutant_concentration['medium'] & temperature['average'] & turbidity['average'], environmental_rating['average'])
+rule4 = ctrl.Rule(oxygen['high'] & biological_index['good'] & pollutant_concentration['low'] & temperature['low'] & turbidity['low'], environmental_rating['good'])
+rule5 = ctrl.Rule(oxygen['medium'] & biological_index['good'] & pollutant_concentration['low'] & temperature['low'] & turbidity['low'], environmental_rating['good'])
+rule6 = ctrl.Rule(oxygen['low'] & biological_index['average'] & pollutant_concentration['high'] & temperature['high'] & turbidity['high'], environmental_rating['poor'])
+rule7 = ctrl.Rule(oxygen['high'] & biological_index['poor'] & pollutant_concentration['medium'] & temperature['average'] & turbidity['average'], environmental_rating['average'])
+rule8 = ctrl.Rule(oxygen['medium'] & biological_index['average'] & pollutant_concentration['low'] & temperature['average'] & turbidity['average'], environmental_rating['good'])
+rule9 = ctrl.Rule(oxygen['low'] & biological_index['good'] & pollutant_concentration['medium'] & temperature['average'] & turbidity['average'], environmental_rating['average'])
+rule10 = ctrl.Rule(oxygen['high'] & biological_index['good'] & pollutant_concentration['high'] & temperature['average'] & turbidity['average'], environmental_rating['average'])
+rule11 = ctrl.Rule(oxygen['medium'] & biological_index['poor'] & pollutant_concentration['high'] & temperature['high'] & turbidity['high'], environmental_rating['poor'])
+rule12 = ctrl.Rule(oxygen['high'] & biological_index['average'] & pollutant_concentration['low'] & temperature['low'] & turbidity['low'], environmental_rating['good'])
+
+# Правила нечіткої логіки
 rule13 = ctrl.Rule(oxygen['high'] & biological_index['average'] & pollutant_concentration['low'], environmental_rating['good'])
 rule14 = ctrl.Rule(oxygen['low'] & biological_index['average'] & pollutant_concentration['medium'], environmental_rating['average'])
 rule15 = ctrl.Rule(oxygen['medium'] & biological_index['average'] & pollutant_concentration['high'], environmental_rating['average'])
@@ -60,31 +76,54 @@ rating_ctrl = ctrl.ControlSystem([
 
 rating_simulation = ctrl.ControlSystemSimulation(rating_ctrl)
 
+
 # Функція для отримання рекомендацій
-def calculate_rating_and_recommendation(oxygen, biological_index, pollutant_concentration):
-    # Передаємо значення до системи
-    rating_simulation.input['oxygen'] = oxygen
-    rating_simulation.input['biological_index'] = biological_index
-    rating_simulation.input['pollutant_concentration'] = pollutant_concentration
+def calculate_rating_and_recommendation(oxygen, biological_index, pollutant_concentration, temperature=20, turbidity=30):
+    # Перевірка на негативні значення
+    if oxygen < 0 or biological_index < 0 or pollutant_concentration < 0 or temperature < 0 or turbidity < 0:
+        return 0, "Invalid input: negative values are not allowed"
 
-    # Обчислюємо рейтинг
-    rating_simulation.compute()
-    rating = rating_simulation.output['environmental_rating']
+    try:
+        # Передаємо значення до системи
+        rating_simulation.input['oxygen'] = oxygen
+        rating_simulation.input['biological_index'] = biological_index
+        rating_simulation.input['pollutant_concentration'] = pollutant_concentration
+        rating_simulation.input['temperature'] = temperature
+        rating_simulation.input['turbidity'] = turbidity
 
-    # Генеруємо рекомендацію
-    if rating < 30:
-        recommendation = "Необхідно терміново провести очищення водойми."
-    elif 30 <= rating < 60:
-        recommendation = "Потрібно моніторити стан та поступово вживати заходів."
-    else:
-        recommendation = "Стан водойми задовільний. Рекомендується підтримувати контроль."
+        # Обчислюємо рейтинг
+        rating_simulation.compute()
+        rating = rating_simulation.output['environmental_rating']
+
+        # Генеруємо рекомендацію
+        if rating < 30:
+            recommendation = "Необхідно терміново провести очищення водойми."
+        elif 30 <= rating < 60:
+            recommendation = "Потрібно моніторити стан та поступово вживати заходів."
+        else:
+            recommendation = "Стан водойми задовільний. Рекомендується підтримувати контроль."
+        
         return rating, recommendation
+
+    except Exception as e:
+        print(f"Error in calculation: {e}")
+        return 50, f"Не вдалося виконати точну оцінку: {e}"
+
+def evaluate_river_safety(oxygen, bio_index, pollutants):
+    if oxygen >= 8 and bio_index >= 5 and pollutants <= 50:
+        return "Безпечна"
+    elif oxygen >= 6 and bio_index >= 4 and pollutants <= 70:
+        return "Умовно безпечна"
+    else:
+        return "Небезпечна"
 
 
 # Тестування
 rating_simulation.input['oxygen'] = 5
 rating_simulation.input['biological_index'] = 4
 rating_simulation.input['pollutant_concentration'] = 70
+rating_simulation.input['temperature'] = 12
+rating_simulation.input['turbidity'] = 17
 
 rating_simulation.compute()
 rating = rating_simulation.output['environmental_rating']

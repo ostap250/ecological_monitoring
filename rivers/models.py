@@ -17,6 +17,19 @@ class MonitoringStation(models.Model):
     def __str__(self):
         return self.name
 
+class SensorData(models.Model):
+    oxygen = models.FloatField()
+    biological_index = models.FloatField()
+    pollutant_concentration = models.FloatField()
+    temperature = models.FloatField()
+    turbidity = models.FloatField()
+    timestamp = models.DateTimeField()
+
+    def __str__(self):
+        return f"Sensor Data at {self.timestamp}"
+
+
+
 class EcologicalIndicator(models.Model):
     river = models.ForeignKey(River, on_delete=models.CASCADE, related_name='indicators')
     indicator_name = models.CharField(max_length=255)

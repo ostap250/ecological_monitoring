@@ -1,0 +1,82 @@
+[
+    {
+        "oxygen": 5.63,
+        "biological_index": 2.43,
+        "pollutant_concentration": 28.26,
+        "temperature": 22.8,
+        "turbidity": 0.64,
+        "timestamp": "2024-12-15T15:21:33.007021"
+    },
+    {
+        "oxygen": 4.48,
+        "biological_index": 1.11,
+        "pollutant_concentration": 15.91,
+        "temperature": 23.91,
+        "turbidity": 1.66,
+        "timestamp": "2024-12-15T15:21:33.010022"
+    },
+    {
+        "oxygen": 5.26,
+        "biological_index": 1.75,
+        "pollutant_concentration": 22.4,
+        "temperature": 20.05,
+        "turbidity": 2.6,
+        "timestamp": "2024-12-15T15:21:33.018023"
+    },
+    {
+        "oxygen": 7.47,
+        "biological_index": 2.76,
+        "pollutant_concentration": 21.47,
+        "temperature": 16.2,
+        "turbidity": 3.14,
+        "timestamp": "2024-12-15T15:21:33.026026"
+    },
+    {
+        "oxygen": 4.3,
+        "biological_index": 1.04,
+        "pollutant_concentration": 27.79,
+        "temperature": 10.29,
+        "turbidity": 1.44,
+        "timestamp": "2024-12-15T15:21:33.034027"
+    },
+    {
+        "oxygen": 5.93,
+        "biological_index": 1.4,
+        "pollutant_concentration": 17.45,
+        "temperature": 20.75,
+        "turbidity": 4.03,
+        "timestamp": "2024-12-15T15:21:33.042028"
+    },
+    {
+        "oxygen": 5.04,
+        "biological_index": 2.91,
+        "pollutant_concentration": 15.42,
+        "temperature": 7.16,
+        "turbidity": 4.49,
+        "timestamp": "2024-12-15T15:21:33.051031"
+    },
+    {
+        "oxygen": 5.16,
+        "biological_index": 2.25,
+        "pollutant_concentration": 26.22,
+        "temperature": 7.73,
+        "turbidity": 2.11,
+        "timestamp": "2024-12-15T15:21:33.060034"
+    },
+    {
+        "oxygen": 5.28,
+        "biological_index": 2.45,
+        "pollutant_concentration": 13.36,
+        "temperature": 23.38,
+        "turbidity": 3.71,
+        "timestamp": "2024-12-15T15:21:33.069549"
+    },
+    {
+        "oxygen": 6.54,
+        "biological_index": 2.57,
+        "pollutant_concentration": 28.25,
+        "temperature": 15.22,
+        "turbidity": 1.43,
+        "timestamp": "2024-12-15T15:21:33.080552"
+    }
+]

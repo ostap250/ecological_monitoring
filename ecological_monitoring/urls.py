@@ -16,21 +16,29 @@ Including another URLconf
 from django.http import JsonResponse
 from django.contrib import admin
 from django.urls import path, include
-from rivers.views import FuzzyLogicView  # Імпорт вашого View для нечіткої логіки
+from rivers.views import FuzzyLogicView  # Імпорт FuzzyLogicView
 from rest_framework.routers import DefaultRouter
-from rivers.views import RiverViewSet, MonitoringStationViewSet, EcologicalIndicatorViewSet, MeasurementViewSet
+from rivers.views import (
+    RiverViewSet, 
+    MonitoringStationViewSet, 
+    EcologicalIndicatorViewSet, 
+    MeasurementViewSet
+)
 
+# Створення маршрутизатора
 router = DefaultRouter()
-router.register(r'rivers', RiverViewSet)
-router.register(r'stations', MonitoringStationViewSet)
-router.register(r'indicators', EcologicalIndicatorViewSet)
-router.register(r'measurements', MeasurementViewSet)
+router.register(r'rivers', RiverViewSet, basename='rivers')
+router.register(r'stations', MonitoringStationViewSet, basename='stations')
+router.register(r'indicators', EcologicalIndicatorViewSet, basename='indicators')
+router.register(r'measurements', MeasurementViewSet, basename='measurements')
 
+# Визначення URL
 urlpatterns = [
     path('', lambda request: JsonResponse({"message": "Site is working for now"})),  # Кореневий маршрут
     path('admin/', admin.site.urls),  # Адмін-панель
-    path('api/', include(router.urls)),  # REST-маршрути
+    path('api/', include(router.urls)),  # REST-маршрути для ViewSets
     path('api/fuzzy-logic/', FuzzyLogicView.as_view(), name='fuzzy_logic'),  # Нечітка логіка
 ]
+
 
 

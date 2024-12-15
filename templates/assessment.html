@@ -1,0 +1,50 @@
+<!-- templates/assessment.html -->
+{% extends 'base.html' %}
+
+{% block title %}Оцінка стану водойм{% endblock %}
+
+{% block content %}
+<h2>Оцінка стану водойм</h2>
+<div class="table-container">
+    <h3>Річка Полтва</h3>
+    <table>
+        <tr>
+            <th>Показник</th>
+            <th>Індекс забруднення</th>
+            <th>Стан</th>
+        </tr>
+        <tr>
+            <td>Загальний стан</td>
+            <td>8.5</td>
+            <td>Забруднена</td>
+        </tr>
+    </table>
+</div>
+
+<div class="table-container">
+    <h3>Річка Дністер</h3>
+    <table>
+        <tr>
+            <th>Показник</</td>
+            <td>3.2</td>
+            <td>Відносно чиста</td>
+        </tr>
+    </table>
+</div>
+
+<div class="table-container">
+    <h3>Річка Зубра</h3>
+    <table>
+        <tr>
+            <th>Показник</th>
+            <th>Індекс забруднення</th>
+            <th>Стан</th>
+        </tr>
+        <tr>
+            <td>Загальний стан</td>
+            <td>5.8</td>
+            <td>Помірно забруднена</td>
+        </tr>
+    </table>
+</div>
+{% endblock %}

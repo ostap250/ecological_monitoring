@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensor Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Показники сенсора в реальному часі</h1>
+    <canvas id="sensorChart" width="400" height="200"></canvas>
+    <script>
+        const ctx = document.getElementById('sensorChart').getContext('2d');
+        const sensorChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [], // Часові мітки
+                datasets: [
+                    { label: 'Oxygen', data: [], borderColor: 'blue', fill: false },
+                    { label: 'Biological Index', data: [], borderColor: 'green', fill: false },
+                    { label: 'Pollutant Concentration', data: [], borderColor: 'red', fill: false },
+                    { label: 'Temperature', data: [], borderColor: 'orange', fill: false },
+                    { label: 'Turbidity', data: [], borderColor: 'purple', fill: false }
+                ]
+            },
+            options: {
+                responsive: true,
+                title: { display: true, text: 'Показники сенсора в реальному часі' },
+                scales: {
+                    x: { display: true },
+                    y: { display: true }
+                }
+            }
+        });
+
+        async function fetchSensorData() {
+            const response = await fetch('/api/sensor-data/');
+            const data = await response.json();
+            console.log(data);
+
+            const now = new Date().toLocaleTimeString();
+
+            // Додаємо нові дані у графік
+            sensorChart.data.labels.push(now);
+            sensorChart.data.datasets[0].data.push(data.oxygen);
+            sensorChart.data.datasets[1].data.push(data.biological_index);
+            sensorChart.data.datasets[2].data.push(data.pollutant_concentration);
+            sensorChart.data.datasets[3].data.push(data.temperature);
+            sensorChart.data.datasets[4].data.push(data.turbidity);
+
+            // Оновлюємо графік
+            sensorChart.update();
+        }
+
+        setInterval(fetchSensorData, 2000);
+    </script>
+</body>
+</html>
