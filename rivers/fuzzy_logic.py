@@ -2,131 +2,59 @@ import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
 
-# Визначення входів (input variables)
-oxygen = ctrl.Antecedent(np.arange(0, 15, 0.1), 'oxygen')
-biological_index = ctrl.Antecedent(np.arange(0, 10, 0.1), 'biological_index')
-pollutant_concentration = ctrl.Antecedent(np.arange(0, 100, 1), 'pollutant_concentration')
-temperature = ctrl.Antecedent(np.arange(0, 30, 0.1), 'temperature') 
-turbidity = ctrl.Antecedent(np.arange(0, 100, 0.1), 'turbidity')
-environmental_rating = ctrl.Consequent(np.arange(0, 101, 1), 'environmental_rating')
+# Define fuzzy variables
+pollution = ctrl.Antecedent(np.arange(0, 101, 1), 'pollution')
+ph_level = ctrl.Antecedent(np.arange(0, 14.1, 0.1), 'ph_level')
+temperature = ctrl.Antecedent(np.arange(0, 51, 1), 'temperature')
+water_quality = ctrl.Consequent(np.arange(0, 101, 1), 'water_quality')
 
-# Визначення виходу (output variable)
-environmental_rating = ctrl.Consequent(np.arange(0, 101, 1), 'environmental_rating')
+# Define membership functions for pollution
+pollution['low'] = fuzz.trimf(pollution.universe, [0, 0, 50])
+pollution['medium'] = fuzz.trimf(pollution.universe, [30, 50, 70])
+pollution['high'] = fuzz.trimf(pollution.universe, [50, 100, 100])
 
-# Фаззифікація входів
-oxygen['low'] = fuzz.trapmf(oxygen.universe, [0, 0, 4, 6])
-oxygen['medium'] = fuzz.trimf(oxygen.universe, [4, 7, 10])
-oxygen['high'] = fuzz.trapmf(oxygen.universe, [8, 12, 15, 15])
+# Define membership functions for pH level
+ph_level['acidic'] = fuzz.trimf(ph_level.universe, [0, 0, 6.5])
+ph_level['neutral'] = fuzz.trimf(ph_level.universe, [6, 7, 8])
+ph_level['alkaline'] = fuzz.trimf(ph_level.universe, [7.5, 14, 14])
 
-# Фаззифікація входів для temperature
-temperature['low'] = fuzz.trapmf(temperature.universe, [0, 0, 10, 15])
-temperature['average'] = fuzz.trimf(temperature.universe, [10, 15, 20])
-temperature['high'] = fuzz.trapmf(temperature.universe, [15, 20, 30, 30])
+# Define membership functions for temperature
+temperature['cold'] = fuzz.trimf(temperature.universe, [0, 0, 15])
+temperature['moderate'] = fuzz.trimf(temperature.universe, [10, 20, 30])
+temperature['hot'] = fuzz.trimf(temperature.universe, [25, 50, 50])
 
-# Фаззифікація для turbidity
-turbidity['low'] = fuzz.trapmf(turbidity.universe, [0, 0, 20, 40])
-turbidity['average'] = fuzz.trimf(turbidity.universe, [20, 50, 80])
-turbidity['high'] = fuzz.trapmf(turbidity.universe, [60, 80, 100, 100])
+# Define membership functions for water quality
+water_quality['poor'] = fuzz.trimf(water_quality.universe, [0, 0, 50])
+water_quality['average'] = fuzz.trimf(water_quality.universe, [30, 50, 70])
+water_quality['good'] = fuzz.trimf(water_quality.universe, [50, 100, 100])
 
-# Фаззифікація для biological_index
-biological_index['poor'] = fuzz.trapmf(biological_index.universe, [0, 0, 3, 5])
-biological_index['average'] = fuzz.trimf(biological_index.universe, [3, 5, 7])
-biological_index['good'] = fuzz.trapmf(biological_index.universe, [6, 8, 10, 10])
+# Define fuzzy rules
+rule1 = ctrl.Rule(pollution['low'] & ph_level['neutral'] & temperature['moderate'], water_quality['good'])
+rule2 = ctrl.Rule(pollution['medium'] | ph_level['acidic'] | temperature['hot'], water_quality['average'])
+rule3 = ctrl.Rule(pollution['high'] | ph_level['alkaline'] | temperature['cold'], water_quality['poor'])
 
-# Фаззифікація для pollutant_concentration
-pollutant_concentration['low'] = fuzz.trapmf(pollutant_concentration.universe, [0, 0, 20, 40])
-pollutant_concentration['medium'] = fuzz.trimf(pollutant_concentration.universe, [20, 50, 80])
-pollutant_concentration['high'] = fuzz.trapmf(pollutant_concentration.universe, [60, 80, 100, 100])
+# Create control system
+water_quality_ctrl = ctrl.ControlSystem([rule1, rule2, rule3])
+water_quality_sim = ctrl.ControlSystemSimulation(water_quality_ctrl)
 
-# Фаззифікація виходу
-environmental_rating['poor'] = fuzz.trapmf(environmental_rating.universe, [0, 0, 30, 50])
-environmental_rating['average'] = fuzz.trimf(environmental_rating.universe, [30, 50, 70])
-environmental_rating['good'] = fuzz.trapmf(environmental_rating.universe, [60, 80, 100, 100])
+# Function to calculate water quality using fuzzy logic
+def calculate_water_quality(pollution_level, ph, temp):
+    water_quality_sim.input['pollution'] = pollution_level
+    water_quality_sim.input['ph_level'] = ph
+    water_quality_sim.input['temperature'] = temp
+    water_quality_sim.compute()
+    
+    quality_score = water_quality_sim.output['water_quality']
 
-# Правила нечіткої логіки
+    # Convert numeric quality score to textual description
+    if quality_score <= 50:
+        quality_description = "Poor"
+    elif 50 < quality_score <= 70:
+        quality_description = "Average"
+    else:
+        quality_description = "Good"
 
-rule1 = ctrl.Rule(oxygen['low'] & biological_index['poor'] & pollutant_concentration['high'] & temperature['high'] & turbidity['high'], environmental_rating['poor'])
-rule2 = ctrl.Rule(oxygen['low'] & biological_index['poor'] & pollutant_concentration['medium'] & temperature['high'] & turbidity['high'], environmental_rating['poor'])
-rule3 = ctrl.Rule(oxygen['medium'] & biological_index['average'] & pollutant_concentration['medium'] & temperature['average'] & turbidity['average'], environmental_rating['average'])
-rule4 = ctrl.Rule(oxygen['high'] & biological_index['good'] & pollutant_concentration['low'] & temperature['low'] & turbidity['low'], environmental_rating['good'])
-rule5 = ctrl.Rule(oxygen['medium'] & biological_index['good'] & pollutant_concentration['low'] & temperature['low'] & turbidity['low'], environmental_rating['good'])
-rule6 = ctrl.Rule(oxygen['low'] & biological_index['average'] & pollutant_concentration['high'] & temperature['high'] & turbidity['high'], environmental_rating['poor'])
-rule7 = ctrl.Rule(oxygen['high'] & biological_index['poor'] & pollutant_concentration['medium'] & temperature['average'] & turbidity['average'], environmental_rating['average'])
-rule8 = ctrl.Rule(oxygen['medium'] & biological_index['average'] & pollutant_concentration['low'] & temperature['average'] & turbidity['average'], environmental_rating['good'])
-rule9 = ctrl.Rule(oxygen['low'] & biological_index['good'] & pollutant_concentration['medium'] & temperature['average'] & turbidity['average'], environmental_rating['average'])
-rule10 = ctrl.Rule(oxygen['high'] & biological_index['good'] & pollutant_concentration['high'] & temperature['average'] & turbidity['average'], environmental_rating['average'])
-rule11 = ctrl.Rule(oxygen['medium'] & biological_index['poor'] & pollutant_concentration['high'] & temperature['high'] & turbidity['high'], environmental_rating['poor'])
-rule12 = ctrl.Rule(oxygen['high'] & biological_index['average'] & pollutant_concentration['low'] & temperature['low'] & turbidity['low'], environmental_rating['good'])
-
-# Правила нечіткої логіки
-rule13 = ctrl.Rule(oxygen['high'] & biological_index['average'] & pollutant_concentration['low'], environmental_rating['good'])
-rule14 = ctrl.Rule(oxygen['low'] & biological_index['average'] & pollutant_concentration['medium'], environmental_rating['average'])
-rule15 = ctrl.Rule(oxygen['medium'] & biological_index['average'] & pollutant_concentration['high'], environmental_rating['average'])
-rule16 = ctrl.Rule(oxygen['high'] & biological_index['poor'] & pollutant_concentration['low'], environmental_rating['average'])
-rule17 = ctrl.Rule(oxygen['low'] & biological_index['good'] & pollutant_concentration['high'], environmental_rating['average'])
-rule18 = ctrl.Rule(oxygen['high'] & biological_index['average'] & pollutant_concentration['medium'], environmental_rating['good'])
-rule19 = ctrl.Rule(oxygen['medium'] & biological_index['poor'] & pollutant_concentration['low'], environmental_rating['average'])
-rule20 = ctrl.Rule(oxygen['low'] & biological_index['poor'] & pollutant_concentration['low'], environmental_rating['poor'])
-
-# Контролер
-rating_ctrl = ctrl.ControlSystem([
-    rule1, rule2, rule3, rule4, rule5, rule6, rule7, rule8, rule9, rule10,
-    rule11, rule12, rule13, rule14, rule15, rule16, rule17, rule18, rule19, rule20
-])
-
-rating_simulation = ctrl.ControlSystemSimulation(rating_ctrl)
-
-
-# Функція для отримання рекомендацій
-def calculate_rating_and_recommendation(oxygen, biological_index, pollutant_concentration, temperature=20, turbidity=30):
-    # Перевірка на негативні значення
-    if oxygen < 0 or biological_index < 0 or pollutant_concentration < 0 or temperature < 0 or turbidity < 0:
-        return 0, "Invalid input: negative values are not allowed"
-
-    try:
-        # Передаємо значення до системи
-        rating_simulation.input['oxygen'] = oxygen
-        rating_simulation.input['biological_index'] = biological_index
-        rating_simulation.input['pollutant_concentration'] = pollutant_concentration
-        rating_simulation.input['temperature'] = temperature
-        rating_simulation.input['turbidity'] = turbidity
-
-        # Обчислюємо рейтинг
-        rating_simulation.compute()
-        rating = rating_simulation.output['environmental_rating']
-
-        # Генеруємо рекомендацію
-        if rating < 30:
-            recommendation = "Необхідно терміново провести очищення водойми."
-        elif 30 <= rating < 60:
-            recommendation = "Потрібно моніторити стан та поступово вживати заходів."
-        else:
-            recommendation = "Стан водойми задовільний. Рекомендується підтримувати контроль."
-        
-        return rating, recommendation
-
-    except Exception as e:
-        print(f"Error in calculation: {e}")
-        return 50, f"Не вдалося виконати точну оцінку: {e}"
-
-def evaluate_river_safety(oxygen, bio_index, pollutants):
-    if oxygen >= 8 and bio_index >= 5 and pollutants <= 50:
-        return "Безпечна"
-    elif oxygen >= 6 and bio_index >= 4 and pollutants <= 70:
-        return "Умовно безпечна"
-    else:   
-        return "Небезпечна"
-
-
-# Тестування
-rating_simulation.input['oxygen'] = 5
-rating_simulation.input['biological_index'] = 4
-rating_simulation.input['pollutant_concentration'] = 70
-rating_simulation.input['temperature'] = 12
-rating_simulation.input['turbidity'] = 17
-
-rating_simulation.compute()
-rating = rating_simulation.output['environmental_rating']
-# print(f"Екологічний рейтинг: {rating:.2f}")
-# print(calculate_rating_and_recommendation(rating))
-
+    return {
+        "score": round(quality_score, 2),
+        "description": quality_description
+    }

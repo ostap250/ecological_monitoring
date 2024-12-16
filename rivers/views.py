@@ -1,111 +1,109 @@
-from django.shortcuts import render
-from rest_framework import viewsets
-from .models import River, MonitoringStation, EcologicalIndicator, Measurement
-from .serializers import RiverSerializer, MonitoringStationSerializer, EcologicalIndicatorSerializer, MeasurementSerializer
-from rest_framework.views import APIView
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from .fuzzy_logic import calculate_rating_and_recommendation
-from rest_framework.exceptions import ValidationError
-from django.http import JsonResponse
-from django.views import View
-import json
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from django.http import JsonResponse
-from .sensor_data_generator import generate_sensor_data, save_to_json_file
-# ViewSets
-class RiverViewSet(viewsets.ModelViewSet):
-    queryset = River.objects.all()
-    serializer_class = RiverSerializer
+from .models import WaterBody, WaterQualityReport, ReportFile
+from .serializers import WaterBodySerializer, WaterQualityReportSerializer, ReportFileSerializer
+from .fuzzy_logic import calculate_water_quality
 
-class MonitoringStationViewSet(viewsets.ModelViewSet):
-    queryset = MonitoringStation.objects.all()
-    serializer_class = MonitoringStationSerializer
+class WaterBodyViewSet(viewsets.ModelViewSet):
+    queryset = WaterBody.objects.all()
+    serializer_class = WaterBodySerializer
 
-class EcologicalIndicatorViewSet(viewsets.ModelViewSet):
-    queryset = EcologicalIndicator.objects.all()
-    serializer_class = EcologicalIndicatorSerializer
+    @action(detail=True, methods=['get'])
+    def reports(self, request, pk=None):
+        water_body = self.get_object()
+        reports = water_body.quality_reports.all()
+        serializer = WaterQualityReportSerializer(reports, many=True)
+        return Response(serializer.data)
 
-class MeasurementViewSet(viewsets.ModelViewSet):
-    queryset = Measurement.objects.all()
-    serializer_class = MeasurementSerializer
+class WaterQualityReportViewSet(viewsets.ModelViewSet):
+    queryset = WaterQualityReport.objects.all()
+    serializer_class = WaterQualityReportSerializer
 
-# Fuzzy Logic API
-class FuzzyLogicView(APIView):
-    def get(self, request, *args, **kwargs):
-        return Response({"message": "GET method is allowed and working!"})
-    
-    def post(self, request):
-        data = request.data
+class ReportFileViewSet(viewsets.ModelViewSet):
+    queryset = ReportFile.objects.all()
+    serializer_class = ReportFileSerializer
 
+
+class WaterQualityViewSet(viewsets.ViewSet):
+    """
+    ViewSet for handling water quality calculations and reports.
+    """
+
+    @action(detail=False, methods=['get'], url_path='fuzzy-water-quality')
+    def fuzzy_water_quality(self, request):
+        """
+        Calculate water quality using fuzzy logic based on query parameters.
+        """
         try:
-            oxygen = float(data.get('oxygen', 50))
-            biological_index = float(data.get('biological_index', 50))
-            pollutant_concentration = float(data.get('pollutant_concentration', 50))
-            temperature = float(data.get('temperature', 20))
-            turbidity = float(data.get('turbidity', 30))
+            pollution = float(request.query_params.get('pollution', 0))
+            ph = float(request.query_params.get('ph', 7))
+            temperature = float(request.query_params.get('temperature', 20))
 
-            print(f"Received values: oxygen={oxygen}, bio_index={biological_index}, "
-              f"pollutant={pollutant_concentration}, temp={temperature}, turbidity={turbidity}")
+            result = calculate_water_quality(pollution, ph, temperature)
 
-            if not (0 <= oxygen <= 15):
-                raise ValidationError("Oxygen level must be between 0 and 15.")
-            if not (0 <= biological_index <= 10):
-                raise ValidationError("Biological index must be between 0 and 10.")
-            if not (0 <= pollutant_concentration <= 100):
-                raise ValidationError("Pollutant concentration must be between 0 and 100.")
-            if not (0 <= temperature <= 30):
-                raise ValidationError("Temperature must be between 0 and 30 degrees Celsius.")
-            if not (0 <= turbidity <= 100):
-                raise ValidationError("Turbidity must be between 0 and 100 NTU.")
-        except (ValueError, TypeError):
-            raise ValidationError("Invalid input data. Please provide numeric values.")
+            return Response({
+                "pollution": pollution,
+                "ph": ph,
+                "temperature": temperature,
+                "quality": result
+            }, status=status.HTTP_200_OK)
+        except ValueError:
+            return Response({"error": "Invalid input parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-        rating, recommendation = calculate_rating_and_recommendation(
-            oxygen, biological_index, pollutant_concentration, temperature, turbidity
-        )
-
-        return Response({
-            'rating': round(rating, 2),
-            'recommendation': recommendation
-        
-        })
-    
-def sensor_data_view(request):
-    """Імітація сенсора: генерація нових даних."""
-    data = generate_sensor_data()
-    save_to_json_file(data)  # Опціонально зберігаємо дані у файл
-    return JsonResponse(data)
-
-def process_river_data(request):
-    # Ваш код для обробки даних річки тут
-    return render(request, 'template_name.html', {})
-
-# Клас для обробки даних з файлу data.json
-@method_decorator(csrf_exempt, name='dispatch')
-class ProcessRiverDataView(View):
-    def post(self, request):
+    @action(detail=True, methods=['get'], url_path='quality-reports')
+    def quality_reports(self, request, pk=None):
+        """
+        Get water quality reports for a water body over a specified period.
+        """
         try:
-            # Читаємо дані з JSON-файлу
-            with open('data.json', 'r', encoding='utf-8') as file:
-                river_data = json.load(file)
+            # Get query parameters for date range
+            start_date = request.query_params.get('start_date', None)
+            end_date = request.query_params.get('end_date', None)
 
-            # Обробка даних через calculate_rating_and_recommendation
-            results = []
-            for river in river_data:
-                rating, recommendation = calculate_rating_and_recommendation(
-                    river['oxygen'],
-                    river['biological_index'],
-                    river['pollutant_concentration']
+            # Validate the date range
+            if not start_date or not end_date:
+                return Response({"error": "Both start_date and end_date are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Get the water body
+            water_body = WaterBody.objects.get(pk=pk)
+
+            # Filter reports for the water body within the date range
+            reports = WaterQualityReport.objects.filter(
+                water_body=water_body,
+                date__range=[start_date, end_date]
+            )
+
+            # Serialize the reports
+            report_data = WaterQualityReportSerializer(reports, many=True).data
+
+            # Calculate overall water quality for the period
+            aggregated_quality = []
+            for report in reports:
+                quality = calculate_water_quality(
+                    report.pollution_level,
+                    report.ph_level,
+                    report.temperature
                 )
-                results.append({
-                    "river": river['river'],
-                    "rating": round(rating, 2),
-                    "recommendation": recommendation
+                aggregated_quality.append({
+                    "date": report.date,
+                    "quality": quality
                 })
 
-            return JsonResponse({"results": results}, safe=False)
+            # Serialize the related water body
+            water_body_data = WaterBodySerializer(water_body).data
+
+            # Add detailed report information and aggregated quality
+            return Response({
+                "water_body": water_body_data,
+                "reports": report_data,
+                "aggregated_quality": aggregated_quality
+            }, status=status.HTTP_200_OK)
+
+        except WaterBody.DoesNotExist:
+            return Response({"error": "Water body not found."}, status=status.HTTP_404_NOT_FOUND)
 
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
-        
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+

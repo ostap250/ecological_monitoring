@@ -45,9 +45,7 @@ INSTALLED_APPS = [
     'rivers',  # Ваш новий додаток
     'rest_framework',
     "corsheaders",
-    'django_extensions',
 ]
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -129,3 +127,9 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
 
 ]
+
+
+# MEDIA
+
+MEDIA_URL = '/media/'  # URL для доступу до файлів
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Де зберігати файли

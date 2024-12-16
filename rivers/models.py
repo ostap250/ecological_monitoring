@@ -1,48 +1,28 @@
 from django.db import models
 
-class River(models.Model):
-    name = models.CharField(max_length=255)
-    length_km = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    pollution_level = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    monitoring_date = models.DateField(null=True, blank=True)
+class WaterBody(models.Model):
+    name = models.CharField(max_length=100, unique=True, verbose_name="Назва водойми")
+    latitude = models.FloatField(verbose_name="Широта")
+    longitude = models.FloatField(verbose_name="Довгота")
+    description = models.TextField(null=True, blank=True, verbose_name="Опис")
 
     def __str__(self):
         return self.name
 
-class MonitoringStation(models.Model):
-    name = models.CharField(max_length=255)
-    location = models.CharField(max_length=255)
-    river = models.ForeignKey(River, on_delete=models.CASCADE, related_name='stations')
+class WaterQualityReport(models.Model):
+    water_body = models.ForeignKey(WaterBody, on_delete=models.CASCADE, related_name="quality_reports")
+    date = models.DateField(verbose_name="Дата звіту")
+    pollution_level = models.FloatField(verbose_name="Рівень забруднення")
+    ph_level = models.FloatField(verbose_name="pH рівень")
+    temperature = models.FloatField(verbose_name="Температура (°C)")
 
     def __str__(self):
-        return self.name
+        return f"Звіт {self.date} для {self.water_body.name}"
 
-class SensorData(models.Model):
-    oxygen = models.FloatField()
-    biological_index = models.FloatField()
-    pollutant_concentration = models.FloatField()
-    temperature = models.FloatField()
-    turbidity = models.FloatField()
-    timestamp = models.DateTimeField()
+class ReportFile(models.Model):
+    title = models.CharField(max_length=200, verbose_name="Назва звіту")
+    file = models.FileField(upload_to="reports/", verbose_name="Файл звіту")
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата завантаження")
 
     def __str__(self):
-        return f"Sensor Data at {self.timestamp}"
-
-
-class EcologicalIndicator(models.Model):
-    river = models.ForeignKey(River, on_delete=models.CASCADE, related_name='indicators')
-    indicator_name = models.CharField(max_length=255)
-    value = models.DecimalField(max_digits=10, decimal_places=2)
-
-    def __str__(self):
-        return self.indicator_name
-
-class Measurement(models.Model):
-    river = models.ForeignKey(River, on_delete=models.CASCADE, related_name='measurements')
-    station = models.ForeignKey(MonitoringStation, on_delete=models.CASCADE, related_name='measurements')
-    parameter = models.CharField(max_length=255)
-    value = models.DecimalField(max_digits=10, decimal_places=2)
-    measurement_date = models.DateField()
-
-    def __str__(self):
-        return f"{self.parameter} - {self.value}"
+        return self.title

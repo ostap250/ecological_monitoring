@@ -1,10 +1,7 @@
 from django.contrib import admin
-from .models import River, MonitoringStation, EcologicalIndicator, Measurement
-from .models import SensorData
+from .models import WaterBody, WaterQualityReport, ReportFile
 
 
-admin.site.register(SensorData)
-admin.site.register(River)
-admin.site.register(MonitoringStation)
-admin.site.register(EcologicalIndicator)
-admin.site.register(Measurement)
+admin.site.register(WaterQualityReport)
+admin.site.register(WaterBody)
+admin.site.register(ReportFile)

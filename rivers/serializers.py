@@ -1,22 +1,17 @@
 from rest_framework import serializers
-from .models import River, MonitoringStation, EcologicalIndicator, Measurement
+from .models import WaterBody, WaterQualityReport, ReportFile
 
-class RiverSerializer(serializers.ModelSerializer):
+class WaterBodySerializer(serializers.ModelSerializer):
     class Meta:
-        model = River
-        fields = '__all__'
+        model = WaterBody
+        fields = ['id', 'name', 'latitude', 'longitude', 'description']
 
-class MonitoringStationSerializer(serializers.ModelSerializer):
+class WaterQualityReportSerializer(serializers.ModelSerializer):
     class Meta:
-        model = MonitoringStation
-        fields = '__all__'
+        model = WaterQualityReport
+        fields = ['id', 'water_body', 'date', 'pollution_level', 'ph_level', 'temperature']
 
-class EcologicalIndicatorSerializer(serializers.ModelSerializer):
+class ReportFileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = EcologicalIndicator
-        fields = '__all__'
-
-class MeasurementSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Measurement
-        fields = '__all__'
+        model = ReportFile
+        fields = ['id', 'title', 'file', 'uploaded_at']
